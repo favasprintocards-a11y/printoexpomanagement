@@ -20,6 +20,13 @@ export default function UserManagementPanel({ entries = [], onClose }) {
   const [createError, setCreateError] = useState('');
   const [createSuccess, setCreateSuccess] = useState('');
 
+  // Password reset states
+  const [editingUser, setEditingUser] = useState(null);
+  const [editPassword, setEditPassword] = useState('');
+  const [editLoading, setEditLoading] = useState(false);
+  const [editError, setEditError] = useState('');
+  const [editSuccess, setEditSuccess] = useState('');
+
   // Expo settings states
   const [expos, setExpos] = useState([]);
   const [loadingExpos, setLoadingExpos] = useState(false);
@@ -92,6 +99,32 @@ export default function UserManagementPanel({ entries = [], onClose }) {
       setCreateError(err.response?.data?.message || 'Failed to create user');
     } finally {
       setCreateLoading(false);
+    }
+  };
+
+  const handleUpdatePassword = async (e) => {
+    e.preventDefault();
+    setEditError('');
+    setEditSuccess('');
+
+    if (editPassword.length < 6) {
+      setEditError('Password must be at least 6 characters');
+      return;
+    }
+
+    setEditLoading(true);
+    try {
+      await API.put(`/users/${editingUser._id}`, { password: editPassword });
+      setEditSuccess(`Password for @${editingUser.username} updated!`);
+      setEditPassword('');
+      setTimeout(() => {
+        setEditingUser(null);
+        setEditSuccess('');
+      }, 1000);
+    } catch (err) {
+      setEditError(err.response?.data?.message || 'Failed to update password');
+    } finally {
+      setEditLoading(false);
     }
   };
 
@@ -401,6 +434,17 @@ export default function UserManagementPanel({ entries = [], onClose }) {
                         >
                           <Icon.Download className="w-4 h-4" />
                         </button>
+                        {/* Reset Password Button */}
+                        <button
+                          type="button"
+                          onClick={() => { setEditingUser(u); setEditPassword(''); setEditError(''); setEditSuccess(''); }}
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-brand-orange hover:bg-brand-orange/10 transition-all flex items-center justify-center"
+                          title="Reset Password"
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                          </svg>
+                        </button>
                         {u.username !== 'admin' && (
                           <button type="button" onClick={() => setConfirmUser(u)}
                             className="p-1.5 rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center"
@@ -491,6 +535,55 @@ export default function UserManagementPanel({ entries = [], onClose }) {
               <button type="button" onClick={() => handleDelete(confirmUser._id)}
                 className="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors shadow-md shadow-red-500/20">Delete</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reset Password Modal */}
+      {editingUser && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4"
+             style={{ background: 'rgba(0,0,0,0.3)' }}>
+          <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full animate-fade-in-up">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-brand-orange/10 flex items-center justify-center">
+                <svg className="w-5 h-5 text-brand-orange" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-gray-800">Reset Password</h3>
+            </div>
+            
+            <p className="text-xs text-gray-500 mb-4">Set a new password for user <strong>@{editingUser.username}</strong>.</p>
+            
+            <form onSubmit={handleUpdatePassword} className="space-y-4">
+              <div>
+                <input
+                  type="password"
+                  value={editPassword}
+                  onChange={(e) => setEditPassword(e.target.value)}
+                  className="w-full px-3 py-2 text-xs rounded-xl border border-gray-200 bg-white placeholder-gray-400 focus:border-brand-orange"
+                  placeholder="New Password (min 6 chars)"
+                  required
+                  autoFocus
+                />
+              </div>
+
+              {editError && (
+                <p className="text-red-500 text-xs font-medium">{editError}</p>
+              )}
+              {editSuccess && (
+                <p className="text-green-600 text-xs font-medium">{editSuccess}</p>
+              )}
+
+              <div className="flex gap-3 justify-end mt-4">
+                <button type="button" onClick={() => setEditingUser(null)}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">Cancel</button>
+                <button type="submit" disabled={editLoading || editPassword.length < 6}
+                  className="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-brand-orange hover:bg-brand-orange-dark transition-colors disabled:opacity-50">
+                  {editLoading ? 'Updating...' : 'Save Password'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
