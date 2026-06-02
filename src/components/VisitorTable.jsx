@@ -21,8 +21,12 @@ export default function VisitorTable({ entries, user, onDelete, onDeleteMultiple
   const uniqueUsers = useMemo(() => {
     const map = new Map();
     entries.forEach((e) => {
-      if (e.addedBy && e.addedBy._id) {
-        map.set(e.addedBy._id, e.addedBy.displayName || e.addedBy.username);
+      if (e.addedBy) {
+        const id = typeof e.addedBy === 'object' ? e.addedBy._id : e.addedBy;
+        const name = typeof e.addedBy === 'object' ? (e.addedBy.displayName || e.addedBy.username) : 'Staff';
+        if (id) {
+          map.set(id.toString(), name);
+        }
       }
     });
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
@@ -58,7 +62,11 @@ export default function VisitorTable({ entries, user, onDelete, onDeleteMultiple
       list = list.filter((e) => e.expoName === filterExpo);
     }
     if (isAdmin && filterUser !== 'All') {
-      list = list.filter((e) => e.addedBy?._id === filterUser);
+      list = list.filter((e) => {
+        if (!e.addedBy) return false;
+        const creatorId = typeof e.addedBy === 'object' ? e.addedBy._id : e.addedBy;
+        return creatorId && creatorId.toString() === filterUser;
+      });
     }
     if (search.trim()) {
       const s = search.toLowerCase();
