@@ -1,0 +1,17 @@
+{
+  "short_name": "Printo Expo",
+  "name": "Printo Expo Management",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "type": "image/png",
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#F9FAFB",
+  "theme_color": "#F26622",
+  "display": "standalone",
+  "orientation": "portrait"
+}
