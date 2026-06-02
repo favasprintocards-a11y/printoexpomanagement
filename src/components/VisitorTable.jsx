@@ -8,6 +8,7 @@ export default function VisitorTable({ entries, user, onDelete, onDeleteMultiple
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState('All');
   const [filterExpo, setFilterExpo] = useState('All');
+  const [filterUser, setFilterUser] = useState('All');
   const [expos, setExpos] = useState([]);
   const [confirmId, setConfirmId] = useState(null);
 
@@ -17,6 +18,16 @@ export default function VisitorTable({ entries, user, onDelete, onDeleteMultiple
 
   const isAdmin = user.role === 'Admin';
 
+  const uniqueUsers = useMemo(() => {
+    const map = new Map();
+    entries.forEach((e) => {
+      if (e.addedBy && e.addedBy._id) {
+        map.set(e.addedBy._id, e.addedBy.displayName || e.addedBy.username);
+      }
+    });
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+  }, [entries]);
+
   useEffect(() => {
     fetchExpos();
   }, []);
@@ -24,7 +35,7 @@ export default function VisitorTable({ entries, user, onDelete, onDeleteMultiple
   // Clear selections when visible entries filter updates
   useEffect(() => {
     setSelectedIds([]);
-  }, [entries, filterType, filterExpo, search]);
+  }, [entries, filterType, filterExpo, filterUser, search]);
 
   const fetchExpos = async () => {
     try {
@@ -46,6 +57,9 @@ export default function VisitorTable({ entries, user, onDelete, onDeleteMultiple
     if (!selectedExpo && filterExpo !== 'All') {
       list = list.filter((e) => e.expoName === filterExpo);
     }
+    if (isAdmin && filterUser !== 'All') {
+      list = list.filter((e) => e.addedBy?._id === filterUser);
+    }
     if (search.trim()) {
       const s = search.toLowerCase();
       list = list.filter(
@@ -53,7 +67,7 @@ export default function VisitorTable({ entries, user, onDelete, onDeleteMultiple
       );
     }
     return list;
-  }, [entries, filterType, filterExpo, search, selectedExpo]);
+  }, [entries, filterType, filterExpo, filterUser, search, selectedExpo, isAdmin]);
 
   const handleSelectAll = (e) => {
     if (e.target.checked) {
@@ -161,6 +175,25 @@ export default function VisitorTable({ entries, user, onDelete, onDeleteMultiple
                   {expos.map((expo) => (
                     <option key={expo._id} value={expo.name}>
                       {expo.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* User filter dropdown — only visible to Admin */}
+            {isAdmin && (
+              <div className="relative">
+                <select
+                  id="filter-user-select"
+                  value={filterUser}
+                  onChange={(e) => setFilterUser(e.target.value)}
+                  className="px-3 py-2 text-xs border border-gray-200 rounded-xl bg-gray-50 focus:bg-white text-gray-600 transition-all font-medium"
+                >
+                  <option value="All">All Users</option>
+                  {uniqueUsers.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.name}
                     </option>
                   ))}
                 </select>
