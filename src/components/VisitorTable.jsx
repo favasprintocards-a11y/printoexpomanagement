@@ -84,13 +84,14 @@ export default function VisitorTable({ entries, user, onDelete, onDeleteMultiple
       'Mobile': e.mobile,
       'Location': e.location || '',
       'Expo': e.expoName || '',
+      'Requirement': e.requirement || '',
       'Date & Time': new Date(e.dateTime).toLocaleString('en-IN'),
       ...(isAdmin ? { 'Added By': e.addedBy?.displayName || e.addedBy?.username || '' } : {})
     }));
     const ws = XLSX.utils.json_to_sheet(data);
     /* column widths */
     ws['!cols'] = [
-      { wch: 4 }, { wch: 22 }, { wch: 10 }, { wch: 22 }, { wch: 14 }, { wch: 18 }, { wch: 18 }, { wch: 20 }, ...(isAdmin ? [{ wch: 12 }] : [])
+      { wch: 4 }, { wch: 22 }, { wch: 10 }, { wch: 22 }, { wch: 14 }, { wch: 18 }, { wch: 18 }, { wch: 30 }, { wch: 20 }, ...(isAdmin ? [{ wch: 12 }] : [])
     ];
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Visitors');
@@ -226,6 +227,7 @@ export default function VisitorTable({ entries, user, onDelete, onDeleteMultiple
                 <th className="px-4 py-3">Mobile</th>
                 <th className="px-4 py-3">Location</th>
                 {!selectedExpo && <th className="px-4 py-3">Expo</th>}
+                <th className="px-4 py-3">Requirement</th>
                 <th className="px-4 py-3">Date & Time</th>
                 {isAdmin && <th className="px-4 py-3">Added By</th>}
                 <th className="px-4 py-3 text-center">Action</th>
@@ -253,6 +255,9 @@ export default function VisitorTable({ entries, user, onDelete, onDeleteMultiple
                   <td className="px-4 py-3.5 text-gray-600 font-mono text-xs">{entry.mobile}</td>
                   <td className="px-4 py-3.5 text-gray-600 text-xs">{entry.location}</td>
                   {!selectedExpo && <td className="px-4 py-3.5 text-gray-600 text-xs font-semibold">{entry.expoName}</td>}
+                  <td className="px-4 py-3.5 text-gray-600 text-xs max-w-[180px] truncate" title={entry.requirement}>
+                    {entry.requirement || <span className="text-gray-300 italic">None</span>}
+                  </td>
                   <td className="px-4 py-3.5 text-gray-505 text-xs whitespace-nowrap">
                     {new Date(entry.dateTime).toLocaleString('en-IN', {
                       day: '2-digit', month: 'short', year: 'numeric',

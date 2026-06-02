@@ -12,7 +12,7 @@ export default function VisitorForm({ onSubmit, selectedExpo }) {
       String(d.getMinutes()).padStart(2,'0');
   };
 
-  const empty = { personName: '', type: 'Reseller', companyName: '', mobile: '', location: '', dateTime: now(), expoName: selectedExpo || '' };
+  const empty = { personName: '', type: 'Reseller', companyName: '', mobile: '', location: '', dateTime: now(), expoName: selectedExpo || '', requirement: '' };
   const [form, setForm] = useState(empty);
   const [errors, setErrors] = useState({});
   const [isOpen, setIsOpen] = useState(true);
@@ -68,7 +68,8 @@ export default function VisitorForm({ onSubmit, selectedExpo }) {
       personName: form.personName.trim(),
       companyName: form.companyName.trim(),
       mobile: form.mobile.trim(),
-      location: form.location.trim()
+      location: form.location.trim(),
+      requirement: form.requirement.trim()
     });
     setForm({ ...empty, dateTime: now(), expoName: selectedExpo || expos[0]?.name || '' });
     setErrors({});
@@ -179,6 +180,19 @@ export default function VisitorForm({ onSubmit, selectedExpo }) {
                      onChange={(e) => set('dateTime', e.target.value)}
                      className={fieldClass('dateTime')} />
               {errors.dateTime && <p className="text-red-500 text-xs mt-1">{errors.dateTime}</p>}
+            </div>
+
+            {/* Requirement */}
+            <div className="sm:col-span-2 lg:col-span-3">
+              <label className="block text-xs font-semibold text-gray-500 mb-1.5">Requirement</label>
+              <textarea
+                id="field-requirement"
+                value={form.requirement}
+                onChange={(e) => set('requirement', e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white/80 text-gray-800 text-sm placeholder-gray-400 transition-all duration-200 hover:border-brand-orange/40 h-20 resize-y"
+                placeholder="Details of what the visitor is looking for..."
+              />
+              {errors.requirement && <p className="text-red-500 text-xs mt-1">{errors.requirement}</p>}
             </div>
           </div>
 
